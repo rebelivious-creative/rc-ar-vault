@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AR Vault | Rebelivious Creative</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/assets/images/logo.png?v=2">
+    
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #050505; font-family: 'Rajdhani', sans-serif; }
+        
+        /* --- R.C. AGENCY OVERLAY UI --- */
+        #ar-hub-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 5, 5, 0.95);
+            backdrop-filter: blur(15px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-out, visibility 0.5s;
+        }
+
+        .hub-header { text-align: center; margin-bottom: 40px; }
+        .hub-header h1 { font-family: 'Oswald', sans-serif; color: #FFFFFF; font-size: 2.5rem; text-transform: uppercase; letter-spacing: 2px; margin: 0; }
+        .hub-header p { color: #C81E31; font-weight: 700; letter-spacing: 4px; margin-top: 5px; }
+
+        .client-grid { display: flex; flex-direction: column; gap: 20px; width: 80%; max-width: 400px; }
+
+        .client-btn {
+            background: transparent; border: 1px solid rgba(255, 255, 255, 0.2); color: #FFFFFF;
+            padding: 20px; font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: all 0.3s ease;
+        }
+        .client-btn:hover, .client-btn.active { border-color: #C81E31; background: rgba(200, 30, 49, 0.1); }
+        .client-btn.disabled { opacity: 0.4; cursor: not-allowed; border-color: rgba(255, 255, 255, 0.05); }
+
+        /* Hide the default MindAR scanning UI until user selects an option */
+        #example-scanning-overlay { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="ar-hub-overlay">
+        <div class="hub-header">
+            <h1>REALITY VAULT</h1>
+            <p>SELECT AR EXPERIENCE</p>
+        </div>
+
+        <div class="client-grid">
+            <button class="client-btn" onclick="launchAR('rc-card')">
+                R.C. ANIMATED CARD
+            </button>
+            
+            <button class="client-btn disabled" onclick="alert('Module locked. Deployment pending.')">
+                THE KOLONG (INCOMING)
+            </button>
+        </div>
+    </div>
+
+    <a-scene mindar-image="imageTargetSrc: ./cardrc.mind; autoStart: false; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+
+        <a-assets>
+            <a-asset-item id="cardModel" src="./cardrc.glb"></a-asset-item>
+        </a-assets>
+
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+        <a-light type="ambient" color="#FFFFFF" intensity="1.5"></a-light>
+        <a-light type="directional" color="#FFFFFF" intensity="2" position="0 2 1"></a-light>
+
+        <a-entity mindar-image-target="targetIndex: 0">
+           <a-entity gltf-model="#cardModel" position="0 0 0" scale="0.10 0.10 0.10" rotation="0 0 0" animation-mixer="clip: *; loop: repeat;"></a-entity>
+        </a-entity>
+        
+    </a-scene>
+
+    <script>
+        function launchAR(client) {
+            if(client === 'rc-card') {
+                // 1. Hide the Lobby UI
+                const overlay = document.getElementById('ar-hub-overlay');
+                overlay.style.opacity = '0';
+                setTimeout(() => { overlay.style.visibility = 'hidden'; }, 500);
+
+                // 2. Force MindAR to start the camera tracking system
+                const sceneEl = document.querySelector('a-scene');
+                sceneEl.systems["mindar-image-system"].start();
+            }
+        }
+    </script>
+</body>
+</html>
