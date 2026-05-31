@@ -4,7 +4,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>AR VAULT | R.C.</title>
     
-    <!-- Core AR Scripts -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
@@ -59,7 +58,7 @@
         AFRAME.registerComponent('interactable', {
             init: function () {
                 this.el.addEventListener('click', () => {
-                    alert("Card tapped! You can redirect to a link or trigger an animation here.");
+                    alert("3D Object tapped! Redirecting or animating...");
                 });
             }
         });
@@ -143,7 +142,15 @@
             <h1>AR VAULT</h1>
             
             <button class="client-btn" onclick="launchAR()">
-                CrossField Collective Logo
+                CHUBBY MUFFIN
+            </button>
+
+            <button class="client-btn" onclick="launchAR()">
+                CROSSFIELD COLLECTIVE
+            </button>
+            
+            <button class="client-btn" onclick="launchAR()">
+                R.C. ANIMATED CARD
             </button>
             
             <button class="client-btn" onclick="launchAR()">
@@ -158,29 +165,33 @@
         </div>
     </div>
 
-    <!-- The .mind file MUST contain ALL target images compiled together -->
     <a-scene mindar-image="imageTargetSrc: ./cfportfolio.mind; autoStart: false; uiScanning: yes;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         
         <a-assets>
-            <a-asset-item id="cardModel" src="./3d-logo.glb"></a-asset-item>
+            <a-asset-item id="chubbyModel" src="./chubby.glb"></a-asset-item> <a-asset-item id="cfModel" src="./3d-logo.glb"></a-asset-item>
+            <a-asset-item id="rcModel" src="./cardrc.glb"></a-asset-item>
             <a-asset-item id="cyhModel" src="./cyh-logo.glb"></a-asset-item>
         </a-assets>
 
-        <!-- Camera requires the raycaster to detect screen taps on the 3D objects -->
         <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="far: 10000; objects: .clickable"></a-camera>
 
         <a-light type="ambient" color="#FFFFFF" intensity="1.5"></a-light>
         <a-light type="directional" color="#FFFFFF" intensity="2" position="0 2 1"></a-light>
 
-        <!-- TARGET 0: R.C. Card -->
         <a-entity mindar-image-target="targetIndex: 0">
-           <!-- Loaded with clickable class, interactable component, and gesture-handler -->
-           <a-entity class="clickable" interactable gesture-handler gltf-model="#cardModel" position="0 0 0" scale="5 5 5" rotation="0 0 0" animation-mixer="clip: *; loop: repeat;"></a-entity>
+           <a-entity class="clickable" interactable gesture-handler gltf-model="#chubbyModel" position="0 0 0" scale="1 1 1" rotation="0 0 0" animation-mixer="clip: *; loop: repeat;"></a-entity>
         </a-entity>
 
-        <!-- TARGET 1: CYH Construction -->
         <a-entity mindar-image-target="targetIndex: 1">
-           <a-entity class="clickable" interactable gesture-handler gltf-model="#cyhModel" position="0 0 0" scale="2 2 2" rotation="0 0 0" animation-mixer></a-entity>
+           <a-entity class="clickable" interactable gesture-handler gltf-model="#cfModel" position="0 0 0" scale="1 1 1" rotation="0 0 0" animation-mixer="clip: *; loop: repeat;"></a-entity>
+        </a-entity>
+
+        <a-entity mindar-image-target="targetIndex: 2">
+           <a-entity class="clickable" interactable gesture-handler gltf-model="#rcModel" position="0 0 0" scale="1 1 1" rotation="0 0 0" animation-mixer="clip: *; loop: repeat;"></a-entity>
+        </a-entity>
+
+        <a-entity mindar-image-target="targetIndex: 3">
+           <a-entity class="clickable" interactable gesture-handler gltf-model="#cyhModel" position="0 0 0" scale="1 1 1" rotation="0 0 0" animation-mixer></a-entity>
         </a-entity>
         
     </a-scene>
@@ -196,7 +207,7 @@
                 document.getElementById('exit-btn').style.display = 'block';
             }, 400);
 
-            // 2. Start tracking engine (It will automatically look for any targets inside all-clients.mind)
+            // 2. Start tracking engine 
             const sceneEl = document.querySelector('a-scene');
             sceneEl.systems["mindar-image-system"].start();
         }
