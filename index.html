@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AR Vault | Rebelivious Creative</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AR VAULT | R.C.</title>
+    
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
@@ -11,72 +12,93 @@
     <link rel="icon" type="image/png" href="/assets/images/logo.png?v=2">
     
     <style>
-        body { margin: 0; overflow: hidden; background-color: #050505; font-family: 'Rajdhani', sans-serif; }
+        :root { --bg: #030000; --accent: #C81E31; --text: #F5F5F5; --border: #1a1a1a; }
+        body { margin: 0; overflow: hidden; background-color: var(--bg); font-family: 'Rajdhani', sans-serif; }
         
-        /* --- R.C. AGENCY OVERLAY UI --- */
+        /* Studio UI Overlay */
         #ar-hub-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(5, 5, 5, 0.95);
-            backdrop-filter: blur(15px);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.5s ease-out, visibility 0.5s;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(3, 0, 0, 0.95); backdrop-filter: blur(10px);
+            z-index: 9999; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            transition: opacity 0.4s ease-out, visibility 0.4s;
         }
 
-        .hub-header { text-align: center; margin-bottom: 40px; }
-        .hub-header h1 { font-family: 'Oswald', sans-serif; color: #FFFFFF; font-size: 2.5rem; text-transform: uppercase; letter-spacing: 2px; margin: 0; }
-        .hub-header p { color: #C81E31; font-weight: 700; letter-spacing: 4px; margin-top: 5px; }
+        .hub-container {
+            border: 1px solid var(--border); background: #050505;
+            padding: 40px; width: 90%; max-width: 500px; text-align: center;
+        }
 
-        .client-grid { display: flex; flex-direction: column; gap: 20px; width: 80%; max-width: 400px; }
+        .specs { color: var(--accent); font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; display: block; }
+        
+        h1 { font-family: 'Oswald', sans-serif; color: var(--text); font-size: 2.5rem; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 30px 0; border-bottom: 1px solid var(--border); padding-bottom: 20px;}
 
         .client-btn {
-            background: transparent; border: 1px solid rgba(255, 255, 255, 0.2); color: #FFFFFF;
-            padding: 20px; font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: all 0.3s ease;
+            width: 100%; background: #0a0a0a; border: 1px solid #222; color: var(--text);
+            padding: 18px; font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s ease;
+            margin-bottom: 15px;
         }
-        .client-btn:hover, .client-btn.active { border-color: #C81E31; background: rgba(200, 30, 49, 0.1); }
-        .client-btn.disabled { opacity: 0.4; cursor: not-allowed; border-color: rgba(255, 255, 255, 0.05); }
+        .client-btn:hover { border-color: var(--accent); background: #111; }
+        .client-btn.disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
 
-        /* Hide the default MindAR scanning UI until user selects an option */
+        /* Back Button */
+        #exit-btn {
+            position: fixed; top: 20px; left: 20px; z-index: 9998;
+            background: rgba(0,0,0,0.7); border: 1px solid #333; color: white;
+            padding: 10px 20px; font-family: 'Rajdhani'; cursor: pointer;
+            display: none; font-weight: 700; letter-spacing: 1px;
+        }
+        
         #example-scanning-overlay { display: none !important; }
     </style>
+
+    <script>
+        // INTERACTION COMPONENT: This allows you to click/tap the 3D model
+        AFRAME.registerComponent('interactable', {
+            init: function () {
+                this.el.addEventListener('click', () => {
+                    // Put whatever you want to happen here when they tap the AR card
+                    alert("Card tapped! You can redirect to a link or trigger an animation here.");
+                });
+            }
+        });
+    </script>
 </head>
 <body>
 
-    <div id="ar-hub-overlay">
-        <div class="hub-header">
-            <h1>REALITY VAULT</h1>
-            <p>SELECT AR EXPERIENCE</p>
-        </div>
+    <button id="exit-btn" onclick="location.reload()">EXIT AR</button>
 
-        <div class="client-grid">
+    <div id="ar-hub-overlay">
+        <div class="hub-container">
+            <span class="specs">SYSTEM LOBBY</span>
+            <h1>AR VAULT</h1>
+            
             <button class="client-btn" onclick="launchAR('rc-card')">
-                R.C. ANIMATED CARD
+                LAUNCH R.C. CARD
             </button>
             
-            <button class="client-btn disabled" onclick="alert('Module locked. Deployment pending.')">
-                THE KOLONG (INCOMING)
+            <button class="client-btn disabled">
+                THE KOLONG (LOCKED)
             </button>
+            
+            <a href="/" style="display: block; margin-top: 20px; color: #666; text-decoration: none; font-size: 0.9rem;">← Back to Home</a>
         </div>
     </div>
 
     <a-scene mindar-image="imageTargetSrc: ./cardrc.mind; autoStart: false; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-
+        
         <a-assets>
             <a-asset-item id="cardModel" src="./cardrc.glb"></a-asset-item>
         </a-assets>
 
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="far: 10000; objects: .clickable"></a-camera>
 
         <a-light type="ambient" color="#FFFFFF" intensity="1.5"></a-light>
         <a-light type="directional" color="#FFFFFF" intensity="2" position="0 2 1"></a-light>
 
         <a-entity mindar-image-target="targetIndex: 0">
-           <a-entity gltf-model="#cardModel" position="0 0 0" scale="5 5 5" rotation="0 0 0" animation-mixer="clip: *; loop: repeat;"></a-entity>
+           <a-entity class="clickable" interactable gltf-model="#cardModel" position="0 0 0" scale="5 5 5" rotation="0 0 0" animation-mixer="clip: *; loop: repeat;"></a-entity>
         </a-entity>
         
     </a-scene>
@@ -84,12 +106,15 @@
     <script>
         function launchAR(client) {
             if(client === 'rc-card') {
-                // 1. Hide the Lobby UI
                 const overlay = document.getElementById('ar-hub-overlay');
                 overlay.style.opacity = '0';
-                setTimeout(() => { overlay.style.visibility = 'hidden'; }, 500);
+                
+                setTimeout(() => { 
+                    overlay.style.visibility = 'hidden'; 
+                    document.getElementById('exit-btn').style.display = 'block';
+                }, 400);
 
-                // 2. Force MindAR to start the camera tracking system
+                // Start tracking
                 const sceneEl = document.querySelector('a-scene');
                 sceneEl.systems["mindar-image-system"].start();
             }
