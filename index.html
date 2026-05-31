@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>AR VAULT | R.C.</title>
     
+    <!-- Core AR Scripts -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
@@ -47,20 +48,87 @@
             position: fixed; top: 20px; left: 20px; z-index: 9998;
             background: rgba(0,0,0,0.7); border: 1px solid #333; color: white;
             padding: 10px 20px; font-family: 'Rajdhani'; cursor: pointer;
-            display: none; font-weight: 700; letter-spacing: 1px;
+            display: none; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
         }
         
         #example-scanning-overlay { display: none !important; }
     </style>
 
     <script>
-        // INTERACTION COMPONENT: This allows you to click/tap the 3D model
+        // 1. INTERACTION COMPONENT: For tapping/clicking links
         AFRAME.registerComponent('interactable', {
             init: function () {
                 this.el.addEventListener('click', () => {
-                    // Put whatever you want to happen here when they tap the AR card
                     alert("Card tapped! You can redirect to a link or trigger an animation here.");
                 });
+            }
+        });
+
+        // 2. GESTURE COMPONENT: For pinch-to-scale and drag-to-rotate
+        AFRAME.registerComponent('gesture-handler', {
+            schema: { enabled: { default: true }, rotationFactor: { default: 5 }, minScale: { default: 0.3 }, maxScale: { default: 8 } },
+            init: function () {
+                this.handleTouchStart = this.handleTouchStart.bind(this);
+                this.handleTouchMove = this.handleTouchMove.bind(this);
+                this.handleTouchEnd = this.handleTouchEnd.bind(this);
+                
+                this.isVisible = false;
+                this.initialScale = this.el.object3D.scale.clone();
+                this.scaleFactor = 1;
+                
+                this.el.sceneEl.addEventListener('markerFound', (e) => { this.isVisible = true; });
+                this.el.sceneEl.addEventListener('markerLost', (e) => { this.isVisible = false; });
+                
+                window.addEventListener('touchstart', this.handleTouchStart);
+                window.addEventListener('touchmove', this.handleTouchMove);
+                window.addEventListener('touchend', this.handleTouchEnd);
+            },
+            handleTouchStart: function (event) {
+                if (!this.isVisible) return;
+                if (event.touches.length === 1) {
+                    this.isDragging = true;
+                    this.previousPosition = { x: event.touches[0].pageX, y: event.touches[0].pageY };
+                } else if (event.touches.length === 2) {
+                    this.isDragging = false;
+                    this.isScaling = true;
+                    this.initialDistance = this.getTouchDistance(event.touches);
+                }
+            },
+            handleTouchMove: function (event) {
+                if (!this.isVisible) return;
+                if (this.isDragging && event.touches.length === 1) {
+                    let deltaX = event.touches[0].pageX - this.previousPosition.x;
+                    let deltaY = event.touches[0].pageY - this.previousPosition.y;
+                    
+                    this.el.object3D.rotation.y += deltaX * (this.data.rotationFactor / 500);
+                    this.el.object3D.rotation.x += deltaY * (this.data.rotationFactor / 500);
+                    
+                    this.previousPosition = { x: event.touches[0].pageX, y: event.touches[0].pageY };
+                } else if (this.isScaling && event.touches.length === 2) {
+                    let currentDistance = this.getTouchDistance(event.touches);
+                    let scaleMultiplier = currentDistance / this.initialDistance;
+                    
+                    let newScale = this.scaleFactor * scaleMultiplier;
+                    if (newScale > this.data.minScale && newScale < this.data.maxScale) {
+                        this.el.object3D.scale.set(
+                            this.initialScale.x * newScale,
+                            this.initialScale.y * newScale,
+                            this.initialScale.z * newScale
+                        );
+                    }
+                }
+            },
+            handleTouchEnd: function (event) {
+                this.isDragging = false;
+                if (this.isScaling && event.touches.length < 2) {
+                    this.isScaling = false;
+                    this.scaleFactor = this.el.object3D.scale.x / this.initialScale.x;
+                }
+            },
+            getTouchDistance: function (touches) {
+                let dx = touches[0].pageX - touches[1].pageX;
+                let dy = touches[0].pageY - touches[1].pageY;
+                return Math.sqrt(dx * dx + dy * dy);
             }
         });
     </script>
@@ -74,50 +142,63 @@
             <span class="specs">SYSTEM LOBBY</span>
             <h1>AR VAULT</h1>
             
-            <button class="client-btn" onclick="launchAR('rc-card')">
-                LAUNCH R.C. CARD
+            <button class="client-btn" onclick="launchAR()">
+                R.C. ANIMATED CARD
+            </button>
+            
+            <button class="client-btn" onclick="launchAR()">
+                CYH CONSTRUCTION
             </button>
             
             <button class="client-btn disabled">
-                THE KOLONG (LOCKED)
+                THE KOLONG (INCOMING)
             </button>
             
             <a href="/" style="display: block; margin-top: 20px; color: #666; text-decoration: none; font-size: 0.9rem;">← Back to Home</a>
         </div>
     </div>
 
-    <a-scene mindar-image="imageTargetSrc: ./cardrc.mind; autoStart: false; uiScanning: yes; filterMinCF: 0.0001; filterBeta: 0.001;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <!-- The .mind file MUST contain ALL target images compiled together -->
+    <a-scene mindar-image="imageTargetSrc: ./all-clients.mind; autoStart: false; uiScanning: yes;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         
         <a-assets>
             <a-asset-item id="cardModel" src="./cardrc.glb"></a-asset-item>
+            <a-asset-item id="cyhModel" src="./cyh-logo.glb"></a-asset-item>
         </a-assets>
 
+        <!-- Camera requires the raycaster to detect screen taps on the 3D objects -->
         <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="far: 10000; objects: .clickable"></a-camera>
 
         <a-light type="ambient" color="#FFFFFF" intensity="1.5"></a-light>
         <a-light type="directional" color="#FFFFFF" intensity="2" position="0 2 1"></a-light>
 
+        <!-- TARGET 0: R.C. Card -->
         <a-entity mindar-image-target="targetIndex: 0">
-           <a-entity class="clickable" interactable gltf-model="#cardModel" position="0 0 0" scale="5 5 5" rotation="0 0 0" animation-mixer="clip: *; loop: repeat;"></a-entity>
+           <!-- Loaded with clickable class, interactable component, and gesture-handler -->
+           <a-entity class="clickable" interactable gesture-handler gltf-model="#cardModel" position="0 0 0" scale="5 5 5" rotation="0 0 0" animation-mixer="clip: *; loop: repeat;"></a-entity>
+        </a-entity>
+
+        <!-- TARGET 1: CYH Construction -->
+        <a-entity mindar-image-target="targetIndex: 1">
+           <a-entity class="clickable" interactable gesture-handler gltf-model="#cyhModel" position="0 0 0" scale="2 2 2" rotation="0 0 0" animation-mixer></a-entity>
         </a-entity>
         
     </a-scene>
 
     <script>
-        function launchAR(client) {
-            if(client === 'rc-card') {
-                const overlay = document.getElementById('ar-hub-overlay');
-                overlay.style.opacity = '0';
-                
-                setTimeout(() => { 
-                    overlay.style.visibility = 'hidden'; 
-                    document.getElementById('exit-btn').style.display = 'block';
-                }, 400);
+        function launchAR() {
+            // 1. Hide the Lobby UI
+            const overlay = document.getElementById('ar-hub-overlay');
+            overlay.style.opacity = '0';
+            
+            setTimeout(() => { 
+                overlay.style.visibility = 'hidden'; 
+                document.getElementById('exit-btn').style.display = 'block';
+            }, 400);
 
-                // Start tracking
-                const sceneEl = document.querySelector('a-scene');
-                sceneEl.systems["mindar-image-system"].start();
-            }
+            // 2. Start tracking engine (It will automatically look for any targets inside all-clients.mind)
+            const sceneEl = document.querySelector('a-scene');
+            sceneEl.systems["mindar-image-system"].start();
         }
     </script>
 </body>
